@@ -1,0 +1,773 @@
+/* Stylesheet for Landing Page / Login Page */
+
+/* import font page : > */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
+
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+  
+body {
+    min-height: 100%;
+    background: #F4F6F7;
+}
+
+
+/* Side Panel */
+
+.side-panel {
+    height: 100vh;
+    background-color: #FFC56C;
+}
+
+.logo img {
+    width: 60px;
+}
+
+.main {
+    height: 100vh;
+}
+
+.logo-name {
+    color: #FDFEFE;
+    font-weight: 600;
+    font-size: 1em;
+    
+}
+
+.user-pic img {
+    width: 100%;
+    max-width: 120px;
+}
+
+.user-name a {
+    color: #2C3E50;
+    text-decoration: none;
+    font-size: 22px;
+}
+
+.position {
+    color: #154360 ;
+}
+
+/* Navigation List */
+
+.navigation-list ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.navigation-list ul li {
+    padding: 10px 0;
+    margin: 0 10px;
+    background-color: transparent;
+    border-radius: 12px;
+    transition: background-color 0.1s ease;
+}
+
+.navigation-list ul li a {
+    font-size: 15px;
+    text-decoration: none;
+    color: #2C3E50;
+    font-weight: 500;
+}
+
+.navigation-list ul li a {
+    transition: color 0.3s ease; 
+}
+
+.navigation-list ul li a:hover {
+    color: #F7F9F9;
+}
+
+.navigation-list ul li:hover {
+    margin: 0 10px;
+    background-color: #F39C12;
+    border-radius: 12px;
+}
+
+.active-1 {
+    color: #F7F9F9 !important;
+    font-weight: 600 !important;
+}
+
+.logout-btn a {
+    color: #2C3E50;
+    font-weight: 500;
+    font-size: 18px;
+    text-decoration: none;
+}
+
+.logout-btn {
+    position: absolute;
+    bottom: 15px;
+}
+
+/* Dashboard */
+
+.dashboard-card {
+    height: 130px;
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0px 0px 16px -1px rgba(0,0,0,0.46);
+    -webkit-box-shadow: 0px 0px 16px -1px rgba(0,0,0,0.46);
+    -moz-box-shadow: 0px 0px 16px -1px rgba(0,0,0,0.46);
+}
+
+.dashboard-header {
+    font-weight: 600;
+    font-size: 26px;
+    color: #34495E;
+}
+
+.dashboard-icon img {
+    height: 40px;
+    width: 100%;
+    max-width: 75px; /* Limit maximum width */
+}
+
+
+.dashcard-label {
+    color: #34495E;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.dashcard-count {
+    color: #34495E;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.club-overview-labels {
+    color: #34495E;
+}
+
+.club-overview-labels h4 {
+    font-size: 16px;
+}
+
+.label-club {
+    display: block;
+    font-size: 16px !important;
+}
+
+.club-name {
+    font-size: 24px;
+}
+
+
+/* ICONS */
+
+.icon {
+    font-size: 28px;
+    color: #566573;
+}
+
+.navbar-toggler .row {
+    display: none;
+}
+
+.side-panel {
+    --bs-gutter-x: 0 !important;
+    padding-left: 12px;
+}
+
+/* Data Table Styling */
+div.dt-container .dt-paging .dt-paging-button.current {
+    border-radius: 8px;
+}
+
+.dt-paging-button.current {
+    color: #e9ecef !important;
+    padding: 8px 18px !important;
+    border: none !important;
+    background-color: #6EC5E9 !important;
+}
+
+div.dt-container .dt-paging .dt-paging-button.disabled, div.dt-container .dt-paging .dt-paging-button.disabled:hover, div.dt-container .dt-paging .dt-paging-button.disabled:active {
+    font-size: 24px;
+    font-weight: 500;
+}
+
+div.dt-container select.dt-input {
+    margin: 0 12px 0 0;
+}
+
+th {
+    font-size: 14px;
+    color: #34495E;
+    resize: horizontal; /* Enable horizontal resizing */
+}
+
+td {
+    padding: 8px; /* Adjust padding as needed */
+    font-size: 14px;
+    color: #5D6D7E;
+}
+
+
+
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: auto; /* Ensure uniform column width */
+}
+
+div.dt-container select.dt-input {
+    font-size: 12px !important;
+}
+
+/* Action Icons */
+
+.download-btn {
+    color: #F4F6F7;
+    background-color: #2ECC71;
+}
+
+.button-action-icon {
+    color: #F7F9F9;
+    font-size: 22px !important;
+}
+
+.action-icon {
+    color: #34495E;
+    font-size: 22px !important;
+}
+
+/* Dropdown Filter */
+.status-filter {
+    min-width: 157px !important;
+    border-radius: 12px !important;
+}
+
+/* Change background color of even rows */
+#kt_datatable_both_scrolls tbody tr:nth-child(even) {
+    background-color: #F4F6F7; /* Set your desired background color */
+}
+
+/* Change background color of odd rows */
+#kt_datatable_both_scrolls tbody tr:nth-child(odd) {
+    background-color: #FEF9E7; /* Set your desired background color */
+}
+
+/* Change background color of even rows */
+#kt_datatable_horizontal_scroll tbody tr:nth-child(even) {
+    background-color: #F4F6F7; /* Set your desired background color */
+}
+
+/* Change background color of odd rows */
+#kt_datatable_horizontal_scroll tbody tr:nth-child(odd) {
+    background-color: #EBF5FB; /* Set your desired background color */
+}
+
+/* Change background color of even rows */
+#kt_datatable_fixed_columns tbody tr:nth-child(even) {
+    background-color: #F4F6F7; /* Set your desired background color */
+}
+
+/* Change background color of odd rows */
+#kt_datatable_fixed_columns tbody tr:nth-child(odd) {
+    background-color: #F5B7B1; /* Set your desired background color */
+}
+
+
+/* Search */
+.dt-search label{
+    margin: 0 10px 0 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+div.dt-container .dt-search input {
+    font-size: 14px;
+    border: 1px solid #aaa;
+    border-radius: 8px !important;
+    padding: 5px;
+    background-color: transparent;
+    color: inherit;
+    margin-left: 3px;
+}
+
+/* Tabs */
+.tab-label {
+    color: #5D6D7E !important;
+    font-size: 14px !important;
+}
+
+.tab-label.active {
+    font-weight: 500;
+    color: #34495E !important;
+    background-color: transparent !important;
+    border-top: none !important;
+    border-right: none !important;
+    border-left: none !important;
+    border-bottom: 2px solid #3498DB !important;
+    border-color: none !important;
+}
+
+/* Buttons */
+.add-btn {
+    font-weight: 500;
+    color: #F7F9F9;
+    background-color: #85C1E9;
+    font-size: 14px;
+}
+
+.request-icon {
+    padding: 0 0 0 8px;
+    font-size: 22px;
+    color: #FBFCFC;
+}
+
+.request-btn {
+    font-weight: 500;
+    color: #F7F9F9;
+    background-color: #F4D03F;
+    font-size: 14px;
+}
+
+.decision-btn-agree {
+    border: none;
+    padding: 5px;
+    border-radius: 150px;
+    font-weight: 500;
+    color: #F7F9F9;
+    background-color: #239B56;
+    font-size: 14px;
+}
+
+.decision-btn-reject {
+    border: none;
+    padding: 5px;
+    border-radius: 150px;
+    font-weight: 500;
+    color: #F7F9F9;
+    background-color: #E74C3C;
+    font-size: 14px;
+}
+
+.add-btn-2 {
+    padding: 10px 42px;
+    border-radius: 32px;
+    color: #FBFCFC;
+    background-color: #01C1FF ;
+    font-size: 14px;
+}
+
+.add-btn-2:hover {
+    color: #FBFCFC;
+    background-color: #0097c9 ;
+}
+
+.request-btn-2 {
+    font-weight: 500;
+    padding: 10px 42px;
+    border-radius: 32px;
+    color: #FBFCFC;
+    background-color: #F1DF00 ;
+    font-size: 14px;
+}
+
+.request-btn-2:hover {
+    color: #FBFCFC;
+    background-color: #dbce19 ;
+}
+
+.cancel-btn {
+    color: #566573;
+    font-size: 14px;
+}
+
+.modal-body {
+    max-height: 580px; /* Set a maximum height to enable scrolling */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+
+/* Scrooll Bar Modification */
+/* Width */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 10px; /* For horizontal scrollbar */
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    border-radius: 12px;
+    background: #F5B7B1 ;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Horizontal scrollbar */
+::-webkit-scrollbar-thumb:horizontal {
+    background: #F5B7B1 ;
+}
+
+/* Horizontal scrollbar handle on hover */
+::-webkit-scrollbar-thumb:horizontal:hover {
+    background: #555;
+}
+
+/* Input Fields */
+.input-1 {
+    max-width: 100%;
+    min-height: 36px;
+    background-color: #05060f0a;
+    border-radius: 0; /* Add border radius */
+    padding: 10px 10px 10px 14px;
+    border: 2px solid transparent;
+    font-size: 14px;
+    transition: border-color .3s cubic-bezier(.25,.01,.25,1) 0s, color .3s cubic-bezier(.25,.01,.25,1) 0s,background .2s cubic-bezier(.25,.01,.25,1) 0s;
+}
+
+.label {
+    display: block;
+    margin-bottom: .3rem;
+    font-size: 14px;
+    font-weight: bold;
+    color: #05060f99;
+    transition: color .3s cubic-bezier(.25,.01,.25,1) 0s;
+}
+
+.label-2 {
+    display: block;
+    margin-bottom: .3rem;
+    font-size: 14px;
+    font-weight: 450;
+    color: #05060f99;
+    transition: color .3s cubic-bezier(.25,.01,.25,1) 0s;
+}
+
+.input-group:hover .input-1 {
+    outline: none;
+    border-color: #FAD7A0;
+}
+
+.input-group:hover .label, .input-1:focus {
+    color: #05060fc2;
+}
+
+/* Checkbox */
+.librarian-name-checkbox {
+    font-size: 14px;
+}
+
+.cyberpunk-checkbox {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #F4D03F;
+    border-radius: 5px;
+    background-color: transparent;
+    display: inline-block;
+    position: relative;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.cyberpunk-checkbox:before {
+    content: "";
+    background-color: #F4D03F;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    transition: all 0.3s ease-in-out;
+}
+
+.cyberpunk-checkbox:checked:before {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.cyberpunk-checkbox-label {
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+}
+
+/* Radio Button */
+.radio-inputs {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 0.5rem;
+    background-color: #EEE;
+    box-sizing: border-box;
+    box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
+    padding: 0.25rem;
+    width: 100%;
+    font-size: 14px;
+  }
+  
+  .radio-inputs .radio {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+  
+  .radio-inputs .radio input {
+    display: none;
+  }
+  
+  .radio-inputs .radio .name {
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    border: none;
+    padding: .5rem 0;
+    color: rgba(51, 65, 85, 1);
+    transition: all .15s ease-in-out;
+  }
+  
+  .radio-inputs .radio input:checked + .name {
+    background-color: #F9E79F;
+    font-weight: 600;
+  }
+
+/* Modal Modifications */
+.modal-modification {
+    background-color: #ffffff;
+}
+
+.modal-title {
+    color: #34495E;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #808B96;
+    font-size: 18px;
+}
+
+.back-btn a {
+    font-weight: 500;
+    color: #808B96;
+    text-decoration: none;
+}
+
+.back-text {
+    display: none;
+}
+
+.back-icon {
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.request-card {
+    border-radius: 8px;
+    width: 100%;
+    background-color: #FCF3CF;
+    padding: 5px 15px;
+}
+
+/* FOR CALENDAR */
+.calendar_div {
+    overflow-x: scroll; /* Enable horizontal scrolling on small screens */
+}
+
+.message-details, .message-dateTime {
+    font-size: 14px;
+}
+
+.orgClub-logo img {
+    width: 50px;
+}
+
+.message-card {
+    transition: transform 0.3s ease; /* Add transition for smooth transformation */
+    border-radius: 4px;
+    background-color: #e0effa;
+}
+
+.request-title {
+    font-size: 16px !important;
+    font-weight: 500;
+}
+
+.orgClub-name, .short-description, .message-dateTime, .proposal-card {
+    color: #5D6D7E;
+}
+
+.scrollable-container-request {
+    max-height: 600px;
+    height: 100%; /* Adjust the height as needed */
+    overflow-y: auto;
+}
+
+a {
+    text-decoration: none;
+    color: inherit
+}
+
+.message-card {
+    border-radius: 4px;
+    background-color: #e0effa;
+}
+
+.message-card:hover {
+    transform: scale(1.02); /* Increase the scale on hover */
+    transition: transform 0.4s ease; /* Add a smooth transition effect */
+}
+
+/* Reverse the transformation on mouseout */
+.message-card:not(:hover) {
+    transform: scale(1); /* Reset to the default scale */
+}
+
+.proposalTitle {
+    color: #2C3E50;
+    font-size: 32px;
+    font-weight: 500;
+}
+
+.orgHead img {
+    width: 40px;
+}
+
+.label-attached-file, .proposalDateTime {
+    font-weight: 500;
+    color: #E59866;
+}
+
+.proposalDescription {
+    line-height: 2; /* Adjust the value as needed */
+}
+
+.reject-btn, .approve-btn {
+    font-weight: 500;
+    color: #F7F9F9;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+}
+
+.reject-btn {
+    background-color: #F84F3B;
+}
+
+.approve-btn {
+    background-color: #00DF0E;
+}
+
+
+
+
+
+@media (max-width: 767px) {
+    /* Nav Panel Toggle */
+ /* Style the toggle button */
+ .navbar-toggler {
+    display: inline-block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  /* Add the border to the top and bottom of the side panel */
+  .custom-side-panel {
+    border-right: 1px solid #e9ecef;
+  }
+
+  /* Add the height to the side panel */
+  .custom-side-panel .logo-name,
+  .custom-side-panel .user-name,
+  .custom-side-panel .position,
+  .custom-side-panel .navigation-list,
+  .custom-side-panel .logout-btn {
+    height: 50px;
+    line-height: 50px;
+  }
+}
+
+@media (min-width: 768px) {
+    body {
+        overflow: hidden; /* Hide the scrollbar */
+    }
+
+    .dt-paging.paging_full_numbers {
+        position: fixed;
+        right: 10px;
+        bottom: 10px;
+        width: 100%;
+        padding: 10px; /* Optional: Add padding for spacing */
+    }
+    
+    #kt_datatable_both_scrolls_info {
+        position: fixed;
+        bottom: 20px;
+        width: 100%;
+        margin-left: 0;
+        padding: 10px; /* Optional: Add padding for spacing */
+    }
+
+    #kt_datatable_horizontal_scroll_info {
+        padding-top: 20px;
+        position: fixed;
+        bottom: 20px;
+        width: 100%;
+        margin-left: 0;
+        padding: 10px; /* Optional: Add padding for spacing */
+    }
+
+    #kt_datatable_fixed_columns_info {
+        padding-top: 20px;
+        position: fixed;
+        bottom: 20px;
+        width: 100%;
+        margin-left: 0;
+        padding: 10px; /* Optional: Add padding for spacing */
+    }
+
+    .label-club {
+        display: inline-block;
+        width: 140px; /* Adjust as needed */
+        font-size: 16px !important;
+    }
+
+    .club-member tr th {
+        min-width: 150px;
+    }
+    .club-member tr {
+        width: 100%;
+        min-width: 150px;
+
+    }
+
+    .back-text {
+        display:inline-flex;
+    }
+
+}
+
+

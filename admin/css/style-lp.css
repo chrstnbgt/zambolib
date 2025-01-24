@@ -1,0 +1,127 @@
+/* Stylesheet for Landing Page / Login Page */
+
+/* import font page : > */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
+
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+  
+body {
+    overflow: hidden;
+    min-height: 100%;
+    background: #F4F6F7;
+}
+
+.main {
+    height: 100vh; /* Set height to 100% of the viewport height */
+}
+
+.background-image {
+    position: absolute;
+    bottom: -10px; /* Set top to 0 to occupy the entire height of the viewport */
+    left: 0;
+    width: 100%;
+    height: 60%; /* Set height to 100% to occupy the entire height of the viewport */
+    z-index: -2;
+}
+
+.card-login {
+    /* margin-bottom: 40px; */
+    background-color: #F4F6F7;
+    border-radius: 12px;
+    box-shadow: 0px 0px 16px -1px rgba(0,0,0,0.46);
+    -webkit-box-shadow: 0px 0px 16px -1px rgba(0,0,0,0.46);
+    -moz-box-shadow: 0px 0px 16px -1px rgba(0,0,0,0.46);
+}
+
+/* Logo */
+.logo-login {
+    width: 100px;
+}
+
+.header-title {
+    margin: 16px 0 0 0;
+    color: #34495E;
+    font-size: 24px;
+}
+
+/* Input Fields */
+.input {
+    max-width: 100%;
+    height: 44px;
+    background-color: #05060f0a;
+    border-radius: 0; /* Add border radius */
+    padding: 0 1rem;
+    border: 2px solid transparent;
+    font-size: 1rem;
+    transition: border-color .3s cubic-bezier(.25,.01,.25,1) 0s, color .3s cubic-bezier(.25,.01,.25,1) 0s,background .2s cubic-bezier(.25,.01,.25,1) 0s;
+}
+
+.label {
+    display: block;
+    margin-bottom: .3rem;
+    font-size: .9rem;
+    font-weight: bold;
+    color: #05060f99;
+    transition: color .3s cubic-bezier(.25,.01,.25,1) 0s;
+}
+
+.input-group:hover .input {
+    outline: none;
+    border-color: #05060f;
+}
+
+.input-group:hover .label, .input:focus {
+    color: #05060fc2;
+}
+
+/* FORGOT PASSWORD */
+.forgot-password a {
+    text-decoration: none;
+    color: #5D6D7E;
+}
+
+.forgot-password {
+    margin: -5px -10px 0 0;
+}
+
+/* SIGN IN BUTTON */
+.sign-in-btn {
+    transition: all 0.3s ease-in-out;
+    font-family: "Dosis", sans-serif;
+    margin-bottom: 15px;
+}
+
+.sign-in-btn a {
+    text-decoration: none;
+    color: white;
+}
+
+  
+.sign-in-btn {
+width: 100%;
+height: 45px;
+border-radius: 12px;
+background-image: linear-gradient(135deg, #feb692 0%, #ea5455 100%);
+box-shadow: 0 20px 30px -6px rgba(245, 147, 142, 0.5);
+outline: none;
+cursor: pointer;
+border: none;
+font-size: 16px;
+color: white;
+}
+
+  
+.sign-in-btn:hover {
+transform: translateY(3px);
+box-shadow: none;
+}
+  
+.sign-in-btn:active {
+opacity: 0.5;
+}
+  
