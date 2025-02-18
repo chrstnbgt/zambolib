@@ -66,6 +66,15 @@ if (!isset($_SESSION['user']) || $_SESSION['user'] != 'admin') {
                         <div class="tab-pane fade show active pt-3" id="events" role="tabpanel" aria-labelledby="events-tab">
 
                         <div class="container ps-0 mb-2 d-flex justify-content-between">
+                            <div class="dropdown d-flex">
+                                <button class="btn download-btn dropdown-toggle" type="button" id="downloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Download
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="downloadDropdown">
+                                    <li><a class="dropdown-item" href="#" onclick="downloadAsPdfEvents()">Download as PDF</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="downloadAsExcelEvents()">Download as Excel</a></li>
+                                </ul>
+                            </div>
                             <div class="d-flex">
                                 <a href="../forms/add-event.php"><button type="button" class="btn add-btn justify-content-center align-items-center me-2" data-bs-toggle="modal" data-bs-target="#addEventModal">
                                     <div class="d-flex align-items-center">
@@ -74,18 +83,18 @@ if (!isset($_SESSION['user']) || $_SESSION['user'] != 'admin') {
                                     </div>
                                 </button></a>
 
-                                <button type="button" class="btn add-btn justify-content-center align-items-center" data-bs-toggle="modal" data-bs-target="#calendarModal">
-                                    <div class="d-flex align-items-center">
-                                        <i class='bx bx-calendar button-action-icon me-2'></i>
-                                    </div>
-                                </button>
+                                <!--<button type="button" class="btn add-btn justify-content-center align-items-center" data-bs-toggle="modal" data-bs-target="#calendarModal">-->
+                                <!--    <div class="d-flex align-items-center">-->
+                                <!--        <i class='bx bx-calendar button-action-icon me-2'></i>-->
+                                <!--    </div>-->
+                                <!--</button>-->
 
-                                <button type="button" class="btn add-btn justify-content-center align-items-center ms-2">
-                                    <div class="d-flex align-items-center">
-                                        <i class='bx bx-file button-action-icon me-2'></i>
-                                        Generate Report
-                                    </div>
-                                </button>
+                                <!--<button type="button" class="btn add-btn justify-content-center align-items-center ms-2">-->
+                                <!--    <div class="d-flex align-items-center">-->
+                                <!--        <i class='bx bx-file button-action-icon me-2'></i>-->
+                                <!--        Generate Report-->
+                                <!--    </div>-->
+                                <!--</button>-->
                             </div>
 
                             <div class="d-flex">
@@ -131,7 +140,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user'] != 'admin') {
                                         <th class="min-w-200px">Date and Time</th>
                                         <th class="min-w-100px">Participant Limit</th>
                                         <th class="min-w-150px">Venue</th>
-                                        <!-- <th class="min-w-150px">Collaboration Width</th> -->
+                                        <th class="min-w-150px">Collaboration Width</th>
                                         <th class="min-w-150px">Status</th>
                                         <th class="min-w-150px">Created At</th>
                                         <th class="min-w-150px">Updated at</th>
@@ -148,7 +157,6 @@ if (!isset($_SESSION['user']) || $_SESSION['user'] != 'admin') {
                         </div>
 
                         <!-- Announcements Table -->
-l
                         <div class="tab-pane fade active pt-3" id="announcements" role="tabpanel" aria-labelledby="announcements-tab">
                         <a href="../forms/add-announcement.php"><button type="button" class="btn request-btn d-flex justify-content-center align-items-center mb-2">
                             <div class="d-flex align-items-center">
@@ -205,5 +213,22 @@ l
             }
         }
     });
+</script>
+<script>
+    function downloadAsPdfEvents() {
+        window.jsPDF = window.jspdf.jsPDF;
+
+        const doc = new jsPDF();
+        doc.autoTable({html: '#kt_datatable_horizontal_scroll'});
+        doc.save('events.pdf');
+    }
+
+    function downloadAsExcelEvents() {
+        const table = document.getElementById('kt_datatable_horizontal_scroll');
+        const ws = XLSX.utils.table_to_sheet(table);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+        XLSX.writeFile(wb, 'events.xlsx');
+    }
 </script>
 

@@ -21,6 +21,7 @@ class Events{
     public $eventStreetName;
     public $eventBuildingName;
     public $eventZipCode;
+    public $organizationClubIDs;
     public $eventStatus;
 
     function __construct()
@@ -32,7 +33,23 @@ class Events{
 
     public function add() {
         $conn = $this->db->connect();
-        $stmt = $conn->prepare("INSERT INTO event (eventTitle, eventDescription, eventStartDate, eventEndDate, eventStartTime, eventEndTime, eventGuestLimit, eventRegion, eventProvince, eventCity, eventBarangay, eventStreetName, eventBuildingName, eventZipCode, eventStatus) VALUES (:eventTitle, :eventDescription, :eventStartDate, :eventEndDate, :eventStartTime, :eventEndTime, :eventGuestLimit, :eventRegion, :eventProvince, :eventCity, :eventBarangay, :eventStreetName, :eventBuildingName, :eventZipCode, :eventStatus)");
+    
+        // Calculate eventStatus based on eventStartDate
+        $currentDateTime = date('Y-m-d H:i:s'); // Current date and time
+        $eventStartDateTime = date('Y-m-d H:i:s', strtotime($this->eventStartDate . ' ' . $this->eventStartTime));
+    
+        if ($currentDateTime < $eventStartDateTime) {
+            $eventStatus = 'Upcoming';
+        } elseif ($currentDateTime >= $eventStartDateTime && $currentDateTime <= date('Y-m-d H:i:s', strtotime($this->eventEndDate . ' ' . $this->eventEndTime))) {
+            $eventStatus = 'Ongoing';
+        } else {
+            $eventStatus = 'Completed';
+        }
+    
+        // Insert event with eventStatus
+        $stmt = $conn->prepare("INSERT INTO event (eventTitle, eventDescription, eventStartDate, eventEndDate, eventStartTime, eventEndTime, eventGuestLimit, eventRegion, eventProvince, eventCity, eventBarangay, eventStreetName, eventBuildingName, eventZipCode, eventStatus) 
+                                VALUES (:eventTitle, :eventDescription, :eventStartDate, :eventEndDate, :eventStartTime, :eventEndTime, :eventGuestLimit, :eventRegion, :eventProvince, :eventCity, :eventBarangay, :eventStreetName, :eventBuildingName, :eventZipCode, :eventStatus)");
+        
         $stmt->bindParam(':eventTitle', $this->eventTitle);
         $stmt->bindParam(':eventDescription', $this->eventDescription);
         $stmt->bindParam(':eventStartDate', $this->eventStartDate);
@@ -47,55 +64,106 @@ class Events{
         $stmt->bindParam(':eventStreetName', $this->eventStreetName);
         $stmt->bindParam(':eventBuildingName', $this->eventBuildingName);
         $stmt->bindParam(':eventZipCode', $this->eventZipCode);
-        $stmt->bindParam(':eventStatus', $this->eventStatus);
-
+        $stmt->bindParam(':eventStatus', $eventStatus);  // Store the calculated eventStatus
+    
         if ($stmt->execute()) {
             $this->eventID = $conn->lastInsertId();
-
+    
             foreach ($this->librarianIDs as $librarianID) {
                 $stmt = $conn->prepare("INSERT INTO event_facilitator (eventID, librarianID) VALUES (:eventID, :librarianID)");
                 $stmt->bindParam(':eventID',  $this->eventID);
                 $stmt->bindParam(':librarianID', $librarianID);
                 $stmt->execute();
             }
-
+    
+            // Add event collaborations
+            foreach ($this->organizationClubIDs as $organizationClubID) {
+                $stmt = $conn->prepare("INSERT INTO event_orgclub (eventID, organizationClubID) VALUES (:eventID, :organizationClubID)");
+                $stmt->bindParam(':eventID',  $this->eventID);
+                $stmt->bindParam(':organizationClubID', $organizationClubID);
+                $stmt->execute();
+            }
+    
             return true;
         } else {
             return false;
         }
     }
-
-    public function edit($eventID, $eventTitle, $eventDescription, $librarianIDs, $eventGuestLimit, $eventRegion, $eventProvince, $eventCity, $eventBarangay, $eventStreetName, $eventBuildingName, $eventZipCode, $eventStatus, $eventStartDate, $eventEndDate, $eventStartTime, $eventEndTime) {
-        $conn = $this->db->connect();
-        $sql = "UPDATE event SET eventTitle = :eventTitle, eventDescription = :eventDescription, eventStartDate = :eventStartDate, eventEndDate = :eventEndDate, eventStartTime = :eventStartTime, eventEndTime = :eventEndTime, eventGuestLimit = :eventGuestLimit, eventRegion = :eventRegion, eventProvince = :eventProvince, eventCity = :eventCity, eventBarangay = :eventBarangay, eventStreetName = :eventStreetName, eventBuildingName = :eventBuildingName, eventZipCode = :eventZipCode, eventStatus = :eventStatus WHERE eventID = :eventID";
-        $query = $conn->prepare($sql);
-        $query->bindParam(':eventID', $eventID);
-        $query->bindParam(':eventTitle', $eventTitle);
-        $query->bindParam(':eventDescription', $eventDescription);
-        $query->bindParam(':eventStartDate', $eventStartDate);
-        $query->bindParam(':eventEndDate', $eventEndDate);
-        $query->bindParam(':eventStartTime', $eventStartTime);
-        $query->bindParam(':eventEndTime', $eventEndTime);
-        $query->bindParam(':eventGuestLimit', $eventGuestLimit);
-        $query->bindParam(':eventRegion', $eventRegion);
-        $query->bindParam(':eventProvince', $eventProvince);
-        $query->bindParam(':eventCity', $eventCity);
-        $query->bindParam(':eventBarangay', $eventBarangay);
-        $query->bindParam(':eventStreetName', $eventStreetName);
-        $query->bindParam(':eventBuildingName', $eventBuildingName);
-        $query->bindParam(':eventZipCode', $eventZipCode);
-        $query->bindParam(':eventStatus', $eventStatus);
     
-        if ($query->execute()) {
-            // Update event facilitators
+
+    public function edit() {
+        $conn = $this->db->connect();
+    
+        // Calculate eventStatus based on the updated eventStartDate
+        $currentDateTime = date('Y-m-d H:i:s'); // Current date and time
+        $eventStartDateTime = date('Y-m-d H:i:s', strtotime($this->eventStartDate . ' ' . $this->eventStartTime));
+    
+        if ($currentDateTime < $eventStartDateTime) {
+            $eventStatus = 'Upcoming';
+        } elseif ($currentDateTime >= $eventStartDateTime && $currentDateTime <= date('Y-m-d H:i:s', strtotime($this->eventEndDate . ' ' . $this->eventEndTime))) {
+            $eventStatus = 'Ongoing';
+        } else {
+            $eventStatus = 'Completed';
+        }
+    
+        // Update event with new eventStatus
+        $stmt = $conn->prepare("UPDATE event 
+                                SET eventTitle = :eventTitle, 
+                                    eventDescription = :eventDescription, 
+                                    eventStartDate = :eventStartDate, 
+                                    eventEndDate = :eventEndDate, 
+                                    eventStartTime = :eventStartTime, 
+                                    eventEndTime = :eventEndTime, 
+                                    eventGuestLimit = :eventGuestLimit, 
+                                    eventRegion = :eventRegion, 
+                                    eventProvince = :eventProvince, 
+                                    eventCity = :eventCity, 
+                                    eventBarangay = :eventBarangay, 
+                                    eventStreetName = :eventStreetName, 
+                                    eventBuildingName = :eventBuildingName, 
+                                    eventZipCode = :eventZipCode, 
+                                    eventStatus = :eventStatus 
+                                WHERE eventID = :eventID");
+    
+        $stmt->bindParam(':eventTitle', $this->eventTitle);
+        $stmt->bindParam(':eventDescription', $this->eventDescription);
+        $stmt->bindParam(':eventStartDate', $this->eventStartDate);
+        $stmt->bindParam(':eventEndDate', $this->eventEndDate);
+        $stmt->bindParam(':eventStartTime', $this->eventStartTime);
+        $stmt->bindParam(':eventEndTime', $this->eventEndTime);
+        $stmt->bindParam(':eventGuestLimit', $this->eventGuestLimit);
+        $stmt->bindParam(':eventRegion', $this->eventRegion);
+        $stmt->bindParam(':eventProvince', $this->eventProvince);
+        $stmt->bindParam(':eventCity', $this->eventCity);
+        $stmt->bindParam(':eventBarangay', $this->eventBarangay);
+        $stmt->bindParam(':eventStreetName', $this->eventStreetName);
+        $stmt->bindParam(':eventBuildingName', $this->eventBuildingName);
+        $stmt->bindParam(':eventZipCode', $this->eventZipCode);
+        $stmt->bindParam(':eventStatus', $eventStatus);  // Update the eventStatus
+        $stmt->bindParam(':eventID', $this->eventID);
+    
+        if ($stmt->execute()) {
+            // Update event facilitators (if necessary)
             $stmt = $conn->prepare("DELETE FROM event_facilitator WHERE eventID = :eventID");
-            $stmt->bindParam(':eventID', $eventID);
+            $stmt->bindParam(':eventID', $this->eventID);
             $stmt->execute();
     
-            foreach ($librarianIDs as $librarianID) {
+            foreach ($this->librarianIDs as $librarianID) {
                 $stmt = $conn->prepare("INSERT INTO event_facilitator (eventID, librarianID) VALUES (:eventID, :librarianID)");
-                $stmt->bindParam(':eventID', $eventID);
+                $stmt->bindParam(':eventID',  $this->eventID);
                 $stmt->bindParam(':librarianID', $librarianID);
+                $stmt->execute();
+            }
+    
+            // Update event collaborations (if necessary)
+            $stmt = $conn->prepare("DELETE FROM event_orgclub WHERE eventID = :eventID");
+            $stmt->bindParam(':eventID', $this->eventID);
+            $stmt->execute();
+    
+            foreach ($this->organizationClubIDs as $organizationClubID) {
+                $stmt = $conn->prepare("INSERT INTO event_orgclub (eventID, organizationClubID) VALUES (:eventID, :organizationClubID)");
+                $stmt->bindParam(':eventID',  $this->eventID);
+                $stmt->bindParam(':organizationClubID', $organizationClubID);
                 $stmt->execute();
             }
     
@@ -106,7 +174,6 @@ class Events{
     }
     
     
-
     function fetch($eventID){
         $sql = "SELECT * FROM event WHERE eventID = :eventID;";
         $query=$this->db->connect()->prepare($sql);
@@ -281,12 +348,29 @@ class Events{
         $sql = "SELECT * FROM event ORDER BY eventCreatedAt ASC";
         $query = $this->db->connect()->prepare($sql);
         $data = null;
+    
         if ($query->execute()) {
             $data = $query->fetchAll();
+    
+            foreach ($data as &$item) {
+                $currentDateTime = date('Y-m-d H:i:s'); // Get current date and time in MySQL format
+                $eventStartTime = date('Y-m-d H:i:s', strtotime($item['eventStartDate'] . ' ' . $item['eventStartTime']));
+                $eventEndTime = date('Y-m-d H:i:s', strtotime($item['eventEndDate'] . ' ' . $item['eventEndTime']));
+    
+                // Determine event status
+                if ($currentDateTime < $eventStartTime) {
+                    $item['eventStatus'] = 'Upcoming';
+                } elseif ($currentDateTime >= $eventStartTime && $currentDateTime <= $eventEndTime) {
+                    $item['eventStatus'] = 'Ongoing';
+                } else {
+                    $item['eventStatus'] = 'Completed';
+                }
+            }
         }
         return $data ?: [];
     }
-
+    
+    
     public function getAllEvents() {
         $sql = "SELECT * FROM event";
         $query = $this->db->connect()->prepare($sql);
@@ -322,6 +406,54 @@ class Events{
     
         return $stmt->rowCount() > 0;
     }
+
+    function getApprovedOrganizationClubs() {
+        $sql = "SELECT * FROM organization_club WHERE ocStatus = 'Approved'";
+        $query = $this->db->connect()->prepare($sql);
+        $data = null;
+    
+        if ($query->execute()) {
+            $data = $query->fetchAll(PDO::FETCH_ASSOC);
+        }
+    
+        return $data ?: [];
+    }
+    
+    public function getEventCollaborations($eventID) {
+        $sql = "SELECT * FROM organization_club WHERE organizationClubID IN (SELECT organizationClubID FROM event_orgclub WHERE eventID = :eventID)";
+        $conn = $this->db->connect();
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(':eventID', $eventID, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getEventCollaborationDetails($eventID) {
+        $conn = $this->db->connect();
+        $stmt = $conn->prepare("SELECT oc.ocName AS organizationClubName 
+                               FROM event_orgclub AS eoc 
+                               JOIN organization_club AS oc ON eoc.organizationClubID = oc.organizationClubID 
+                               WHERE eoc.eventID = :eventID");
+        $stmt->bindParam(':eventID', $eventID);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getEventStatus($eventStartDate, $eventEndDate, $eventStartTime, $eventEndTime) {
+        $currentDateTime = date('Y-m-d H:i:s');
+        $startDateTime = date('Y-m-d H:i:s', strtotime($eventStartDate . ' ' . $eventStartTime));
+        $endDateTime = date('Y-m-d H:i:s', strtotime($eventEndDate . ' ' . $eventEndTime));
+    
+        if ($currentDateTime < $startDateTime) {
+            return 'Upcoming';
+        } elseif ($currentDateTime >= $startDateTime && $currentDateTime <= $endDateTime) {
+            return 'Ongoing';
+        } else {
+            return 'Finished';
+        }
+    }
+    
     
     
 }
+?>

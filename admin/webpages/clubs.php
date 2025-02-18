@@ -48,10 +48,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user'] != 'admin') {
                         <div class="heading-name">
                             <p class="pt-3">Clubs</p>
                         </div>
-
                  
-
-
                     </div>
 
                     
@@ -60,21 +57,32 @@ if (!isset($_SESSION['user']) || $_SESSION['user'] != 'admin') {
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link tab-label active" id="library-clubs-tab" data-bs-toggle="tab" data-bs-target="#library-clubs" type="button" role="tab" aria-controls="library-clubs" aria-selected="true">Library CLubs</button>
                             </li>
-                            <li class="nav-item" role="presentation">
+                            <!-- <li class="nav-item" role="presentation">
                                 <button class="nav-link tab-label" id="affiliated-clubs-tab" data-bs-toggle="tab" data-bs-target="#affiliated-clubs" type="button" role="tab" aria-controls="affiliated-clubs" aria-selected="false">Affiliated Clubs</button>
-                            </li>
+                            </li> -->
                         </ul>
                         <div class="tab-content" id="myTabContent">
+                            
 
                         <!-- Library Clubs Table -->
                         <div class="tab-pane fade show active pt-3" id="library-clubs" role="tabpanel" aria-labelledby="library-clubs-tab">
-                        <a href="../forms/add-clubs.php"><button type="button" class="btn add-btn d-flex justify-content-center align-items-center mb-2" data-bs-toggle="modal" data-bs-target="#addClubModal">
-                            <div class="d-flex align-items-center">
-                                <i class='bx bx-plus-circle button-action-icon me-2'></i>
-                                Add Club
+                            <div class="d-flex">
+                                <a href="../forms/add-clubs.php"><button type="button" class="btn add-btn d-flex justify-content-center align-items-center mb-2 ms-2" data-bs-toggle="modal" data-bs-target="#addClubModal">
+                                    <div class="d-flex align-items-center">
+                                        <i class='bx bx-plus-circle button-action-icon me-2'></i>
+                                        Add Club
+                                    </div>
+                                </button></a>
+                                <div class="dropdown">
+                                    <button class="btn download-btn dropdown-toggle ms-2" type="button" id="downloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Download
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="downloadDropdown">
+                                        <li><a class="dropdown-item" href="#" onclick="downloadAsPdfClubs()">Download as PDF</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="downloadAsExcelClubs()">Download as Excel</a></li>
+                                    </ul>
+                                </div>
                             </div>
-                        </button></a>
-
                             <div class="table-responsive">
                                 
                                 <table id="kt_datatable_horizontal_scroll" class="table table-striped table-row-bordered gy-5 gs-7">
@@ -103,35 +111,45 @@ if (!isset($_SESSION['user']) || $_SESSION['user'] != 'admin') {
 
                         <!-- Affiliated Clubs Table -->
                         <div class="tab-pane fade active pt-3" id="affiliated-clubs" role="tabpanel" aria-labelledby="affiliated-clubs-tab">
-                            <a href="./affiliated-club-request.php"><button type="button" class="btn request-btn d-flex justify-content-center align-items-center mb-2" data-bs-toggle="" data-bs-target="#">
-                                <div class="d-flex align-items-center">
-                                    <i class='bx bx-file action-icon me-2'></i>
-                                    Request
-                                </div>
-                            </button></a>
-
-                        <div class="table-responsive">
-                            
-                            <table id="kt_datatable_both_scrolls" class="table table-striped table-row-bordered gy-5 gs-7">
-                                <thead>
-                                    <tr class="fw-semibold fs-6 text-gray-800">
-                                        <th class="min-w-250px">#</th>
-                                        <th class="min-w-250px">Club Name</th>
-                                        <th class="min-w-300px">Representative Name</th>
-                                        <!-- <th class="min-w-200px">No. of Members</th> -->
-                                        <th class="min-w-150px">Email</th>
-                                        <th class="min-w-100px">Contact Number</th>
-                                        <th class="min-w-100px">Date Affiliated</th>
-                                        <th scope="col" width="5%">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="affiliateClubsTableBody">
-                                <?php
-                                    include('showaffiliateclubs.php')
-                                ?>
-                                </tbody>
-                            </table>
-                        </div>
+                            <div class="d-flex">
+                                <a href="./affiliated-club-request.php"><button type="button" class="btn request-btn d-flex justify-content-center align-items-center mb-2" data-bs-toggle="" data-bs-target="#">
+                                    <div class="d-flex align-items-center">
+                                        <i class='bx bx-file action-icon me-2'></i>
+                                        Request
+                                    </div>
+                                </button></a>
+                                <div class="dropdown">
+                                        <button class="btn download-btn dropdown-toggle ms-2" type="button" id="downloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Download
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="downloadDropdown">
+                                            <li><a class="dropdown-item" href="#" onclick="downloadAsPdfAffiliateClubs()">Download as PDF</a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="downloadAsExcelAffiliateClubs()">Download as Excel</a></li>
+                                        </ul>
+                                    </div>
+                            </div>
+                            <div class="table-responsive">
+                                
+                                <table id="kt_datatable_both_scrolls" class="table table-striped table-row-bordered gy-5 gs-7">
+                                    <thead>
+                                        <tr class="fw-semibold fs-6 text-gray-800">
+                                            <th class="min-w-250px">#</th>
+                                            <th class="min-w-250px">Club Name</th>
+                                            <th class="min-w-300px">Representative Name</th>
+                                            <!-- <th class="min-w-200px">No. of Members</th> -->
+                                            <th class="min-w-150px">Email</th>
+                                            <th class="min-w-100px">Contact Number</th>
+                                            <th class="min-w-100px">Date Affiliated</th>
+                                            <th scope="col" width="5%">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="affiliateClubsTableBody">
+                                    <?php
+                                        include('showaffiliateclubs.php')
+                                    ?>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         </div>
@@ -157,4 +175,38 @@ if (!isset($_SESSION['user']) || $_SESSION['user'] != 'admin') {
             }
         }
     });
+</script>
+<script>
+    function downloadAsPdfClubs() {
+        window.jsPDF = window.jspdf.jsPDF;
+
+        const doc = new jsPDF();
+        doc.autoTable({html: '#kt_datatable_horizontal_scroll'});
+        doc.save('clubs.pdf');
+    }
+
+    function downloadAsExcelClubs() {
+        const table = document.getElementById('kt_datatable_horizontal_scroll');
+        const ws = XLSX.utils.table_to_sheet(table);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+        XLSX.writeFile(wb, 'clubs.xlsx');
+    }
+</script>
+<script>
+    function downloadAsPdfAffiliateClubs() {
+        window.jsPDF = window.jspdf.jsPDF;
+
+        const doc = new jsPDF();
+        doc.autoTable({html: '#kt_datatable_horizontal_scroll'});
+        doc.save('affiliated-clubs.pdf');
+    }
+
+    function downloadAsExcelAffiliateClubs() {
+        const table = document.getElementById('kt_datatable_horizontal_scroll');
+        const ws = XLSX.utils.table_to_sheet(table);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+        XLSX.writeFile(wb, 'affiliated-clubs.xlsx');
+    }
 </script>

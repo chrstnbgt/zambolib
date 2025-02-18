@@ -197,6 +197,23 @@ class User {
         }
     }
 
+    function getAttendanceDetails($userID) {
+        $sql = "SELECT lib_attendanceuser.*, library_attendance.*, attendance_checker.* 
+                FROM lib_attendanceuser 
+               LEFT JOIN library_attendance ON lib_attendanceuser.libraryAttendanceID = library_attendance.libraryAttendanceID 
+               LEFT JOIN attendance_checker ON library_attendance.attendanceCheckerID = attendance_checker.attendanceCheckerID 
+                WHERE lib_attendanceuser.userID = :userID";
+        $query = $this->db->connect()->prepare($sql);
+        $query->bindParam(':userID', $userID);
+        if ($query->execute()) {
+            $data = $query->fetchAll();
+            return $data;
+        } else {
+            // Handle errors here
+            return null;
+        }
+    }
+
 }
 
 ?>

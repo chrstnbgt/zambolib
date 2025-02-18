@@ -11,7 +11,10 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
     if ($announcementArray) {
         foreach ($announcementArray as $item) {
             // Format the date range
-            $formattedDateRange = date("F j, Y", strtotime($item['eaStartDate'])) . " to " . date("F j, Y", strtotime($item['eaEndDate']));
+            $formattedDateRange = date("F j, Y", strtotime($item['eaStartDate']));
+            if ($item['eaStartDate'] != $item['eaEndDate']) {
+                $formattedDateRange .= " to " . date("F j, Y", strtotime($item['eaEndDate']));
+            }
             // Format the time range
             $formattedTimeRange = date("g:i A", strtotime($item['eaStartTime'])) . " - " . date("g:i A", strtotime($item['eaEndTime']));
 

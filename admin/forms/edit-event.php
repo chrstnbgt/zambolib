@@ -4,15 +4,24 @@ require_once '../classes/librarian.class.php';
 require_once '../tools/adminfunctions.php';
 
 session_start();
-/*
-    if the user is not logged in, then redirect to the login page,
-    this is to prevent users from accessing pages that require
-    authentication such as the dashboard
-*/
 if (!isset($_SESSION['user']) || $_SESSION['user'] != 'admin') {
     header('location: ./index.php');
 }
-//if the above code is false then the HTML below will be displayed
+
+// Function to check if there is a conflicting event
+function hasConflictingEvent($startDateTime, $endDateTime, $existingEvents) {
+    foreach ($existingEvents as $event) {
+        $eventStart = strtotime($event['eventStartDate'] . ' ' . $event['eventStartTime']);
+        $eventEnd = strtotime($event['eventEndDate'] . ' ' . $event['eventEndTime']);
+        $start = strtotime($startDateTime);
+        $end = strtotime($endDateTime);
+
+        if (($start >= $eventStart && $start < $eventEnd) || ($end > $eventStart && $end <= $eventEnd)) {
+            return true; // Conflicting event found
+        }
+    }
+    return false; // No conflicting event found
+}
 
 $events = new Events();
 $librarian = new Librarian();
@@ -38,15 +47,14 @@ if (isset($_GET['id'])) {
             'eventBuildingName' => $record['eventBuildingName'],
             'eventZipCode' => $record['eventZipCode'],
             'eventStatus' => $record['eventStatus'],
-            'librarianIDs' => isset($record['librarianIDs']) ? explode(',', $record['librarianIDs']) : []
+            'librarianIDs' => isset($record['librarianIDs']) ? explode(',', $record['librarianIDs']) : [],
+            'organizationClubIDs' => isset($record['organizationClubIDs']) ? explode(',', $record['organizationClubIDs']) : []
         ];
     } else {
-        // Handle the case when the event ID is not found in the database
         echo "Event not found";
         exit;
     }
 } else {
-    // Set default values for $event when it's not set
     $event = [
         'eventID' => isset($_GET['id']) ? $_GET['id'] : '',
         'eventTitle' => '',
@@ -64,58 +72,47 @@ if (isset($_GET['id'])) {
         'eventBuildingName' => '',
         'eventZipCode' => '',
         'eventStatus' => '',
-        'librarianIDs' => []
+        'librarianIDs' => [],
+        'organizationClubIDs' => []
     ];
 }
 
 if (isset($_POST['save'])) {
-    // Sanitize
-    $eventID = $_GET['id'];
-    $eventTitle = htmlentities($_POST['eventTitle']);
-    $eventDescription = htmlentities($_POST['eventDescription']);
-    $eventStartDate = htmlentities($_POST['eventStartDate']);
-    $eventEndDate = htmlentities($_POST['eventEndDate']);
-    $eventStartTime = htmlentities($_POST['eventStartTime']);
-    $eventEndTime = htmlentities($_POST['eventEndTime']);
-    $eventGuestLimit = htmlentities($_POST['eventGuestLimit']);
-    $eventRegion = htmlentities($_POST['eventRegion']);
-    $eventProvince = htmlentities($_POST['eventProvince']);
-    $eventCity = htmlentities($_POST['eventCity']);
-    $eventBarangay = htmlentities($_POST['eventBarangay']);
-    $eventStreetName = htmlentities($_POST['eventStreetName']);
-    $eventBuildingName = htmlentities($_POST['eventBuildingName']);
-    $eventZipCode = htmlentities($_POST['eventZipCode']);
-    $eventStatus = htmlentities($_POST['eventStatus']);
+    // Retrieve the existing event record
+    $record = $events->fetch($_GET['id']);
 
-    $selectedLibrarianIDs = isset($_POST['librarianIDs']) ? $_POST['librarianIDs'] : [];
-    $events->librarianIDs = $selectedLibrarianIDs;
+    // Check if the start date is greater than the end date
+    if (strtotime($_POST['eventStartDate']) > strtotime($_POST['eventEndDate'])) {
+        echo '<div class="alert alert-danger" role="alert">The event start date cannot be greater than the end date. Please check the dates.</div>';
+    } 
+    // Check if the start time is greater than the end time on the same day
+    elseif (strtotime($_POST['eventStartDate']) == strtotime($_POST['eventEndDate']) && strtotime($_POST['eventStartTime']) > strtotime($_POST['eventEndTime'])) {
+        echo '<div class="alert alert-danger" role="alert">The event start time cannot be greater than the end time on the same day. Please check the times.</div>';
+    } 
+    else {
+        // Date and time are valid, proceed with conflict check and update
+        // Get all existing events
+        $existingEvents = $events->getAllEvents();
 
-    // Validate
-    if (validate_field($eventTitle) &&
-        validate_field($eventDescription) &&
-        validate_field($eventStartDate) &&
-        validate_field($eventEndDate) &&
-        validate_field($eventStartTime) &&
-        validate_field($eventEndTime) &&
-        validate_field($eventGuestLimit) &&
-        validate_field($eventRegion) &&
-        validate_field($eventProvince) &&
-        validate_field($eventCity) &&
-        validate_field($eventBarangay) &&
-        validate_field($eventStreetName) &&
-        validate_field($eventZipCode) &&
-        validate_field($eventStatus)) {
-
-        if ($events->edit($eventID, $eventTitle, $eventDescription, $eventStartDate, $eventEndDate, $eventStartTime, $eventEndTime, $eventGuestLimit, $eventRegion, $eventProvince, $eventCity, $eventBarangay, $eventStreetName, $eventBuildingName, $eventZipCode, $eventStatus)) {
-            $eventID = $events->eventID;
-            $conn = $events->db->connect();
-            header('location: ../webpages/events.php');
+        // Check for conflicting events
+        if (hasConflictingEvent($_POST['eventStartDate'] . ' ' . $_POST['eventStartTime'], $_POST['eventEndDate'] . ' ' . $_POST['eventEndTime'], $existingEvents)) {
+            echo '<div class="alert alert-danger" role="alert">This event conflicts with an existing event. Please choose a different date or time.</div>';
         } else {
-            echo 'An error occurred while editing event in the database.';
+            // Proceed with updating the event
+            if ($events->edit($record['eventID'], $_POST['eventTitle'], $_POST['eventDescription'], $_POST['librarianIDs'], $_POST['organizationClubIDs'], $_POST['eventStartDate'], $_POST['eventEndDate'], $_POST['eventStartTime'], $_POST['eventEndTime'], $_POST['eventGuestLimit'], $_POST['eventRegion'], $_POST['eventProvince'], $_POST['eventCity'], $_POST['eventBarangay'], $_POST['eventStreetName'], $_POST['eventBuildingName'], $_POST['eventZipCode'], $_POST['eventStatus'])) {
+                echo 'Event updated successfully.';
+                // Redirect to events page
+                header('location: ../webpages/events.php');
+                exit(); // Exit to prevent further output
+            } else {
+                echo 'An error occurred while updating event in the database.';
+            }
         }
     }
 }
+
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -124,14 +121,6 @@ if (isset($_POST['save'])) {
   $title = 'Events & Announcements';
   $events = 'active-1';
   require_once('../include/head.php');
-
-  $database = new Database();
-  $connection = $database->connect();
-
-  $librarianQuery = "SELECT DISTINCT l.* FROM librarian l
-  JOIN event_facilitator ef ON l.librarianID = ef.librarianID
-  WHERE l.librarianEmployment = 'Active';";
-  $librarianResult = $connection->query($librarianQuery);
 ?>
 
 <body>
@@ -179,7 +168,10 @@ if (isset($_POST['save'])) {
                                 <?php
                                 foreach ($librarians as $librarian) {
                                     $isChecked = is_array($event['librarianIDs']) && in_array($librarian['librarianID'], $event['librarianIDs']) ? 'checked' : '';
-                                    echo '<input type="checkbox" name="librarianIDs[]" value="' . $librarian['librarianID'] . '" ' . $isChecked . '> ' . $librarian['librarianFirstName'] . ' ' . $librarian['librarianLastName'] . ' <br>';
+                                    echo '<div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="librarianIDs[]" id="librarian' . $librarian['librarianID'] . '" value="' . $librarian['librarianID'] . '" ' . $isChecked . '>
+                                            <label class="form-check-label" for="librarian' . $librarian['librarianID'] . '">' . $librarian['librarianFirstName'] . ' ' . $librarian['librarianLastName'] . '</label>
+                                        </div>';
                                 }                           
                                 ?>
                             </div>
@@ -223,8 +215,8 @@ if (isset($_POST['save'])) {
                         </div>
                         <div class="row d-flex justify-content-center my-1">
                             <div class="input-group flex-column mb-3">
-                                <label for="guestLimit" class="label">Guest Limit</label>
-                                <input type="number" name="guestLimit" id="guestLimit" class="input-1" required value="<?php echo isset($event) ? $event['eventGuestLimit'] : ''; ?>">
+                                <label for="eventGuestLimit" class="label">Guest Limit</label>
+                                <input type="number" name="eventGuestLimit" id="eventGuestLimit" class="input-1" required value="<?php echo isset($event) ? $event['eventGuestLimit'] : ''; ?>">
                                 <?php
                                 if(isset($_POST['eventGuestLimit']) && !validate_field($_POST['eventGuestLimit'])){
                                     ?>
@@ -340,60 +332,64 @@ if (isset($_POST['save'])) {
                             ?>
                         </div>
 
-                        <!-- <div class="row d-flex justify-content-center my-1">
-                            <div class="input-group flex-column mb-3">
-                                <label for="description" class="label">Collaboration with</label>
-
-                                <div class="checkbox-container d-flex align-items-center my-1">
-                                    <label class="cyberpunk-checkbox-label">
-                                    <input type="checkbox" class="cyberpunk-checkbox librarian-name-checkbox ms-2">None</label>
-                                </div>
-
-                                <div class="checkbox-container d-flex align-items-center my-1">
-                                    <label class="cyberpunk-checkbox-label">
-                                    <input type="checkbox" class="cyberpunk-checkbox librarian-name-checkbox ms-2">Department of Information, Communications, and Technology</label>
-                                </div>
-
-                                <div class="checkbox-container d-flex align-items-center my-1">
-                                    <label class="cyberpunk-checkbox-label">
-                                    <input type="checkbox" class="cyberpunk-checkbox librarian-name-checkbox ms-2">Bookworm Club</label>
-                                </div>
-                            </div>
-                        </div> -->
-
                         <div class="row d-flex justify-content-center my-1">
                             <div class="input-group flex-column mb-3">
-                            <label for="eventStatus" class="label mb-2">Status</label>
-                                <div class="d-flex justify-content-center">
-                                    <div class="form-check">
-                                        <input type="radio" class="form-check-input" id="statusUpcoming" name="eventStatus" value="Upcoming" <?php echo isset($event) && $event['eventStatus'] == 'Upcoming' ? 'checked' : ''; ?>>
-                                        <label class="form-check-label" for="statusUpcoming">Upcoming</label>
-                                    </div>
-                                    <div class="form-check ms-3">
-                                        <input type="radio" class="form-check-input" id="statusOngoing" name="eventStatus" value="Ongoing" <?php echo isset($event) && $event['eventStatus'] == 'Ongoing' ? 'checked' : ''; ?>>
-                                        <label class="form-check-label" for="statusOngoing">Ongoing</label>
-                                    </div>
-                                    <div class="form-check ms-3">
-                                        <input type="radio" class="form-check-input" id="statusCompleted" name="eventStatus" value="Completed" <?php echo isset($event) && $event['eventStatus'] == 'Completed' ? 'checked' : ''; ?>>
-                                        <label class="form-check-label" for="statusCompleted">Completed</label>
-                                    </div>
-                                </div>
+                                <label for="organizationClubID" class="label">Collaboration with</label>
                                 <?php
-                                if((!isset($_POST['eventStatus']) && isset($_POST['save'])) || (isset($_POST['eventStatus']) && !validate_field($_POST['eventStatus']))){
-                                    ?>
-                                    <p class="text-danger my-1">Select event status</p>
-                                    <?php
+                                $event = new Events(); // Create an instance of the Events class
+                                $approvedOrganizationClubs = $event->getApprovedOrganizationClubs(); // Fetch approved organization clubs
+
+                                if (empty($approvedOrganizationClubs)) {
+                                    echo '<p>No affiliated organizations or clubs.</p>';
+                                } else {
+                                    foreach ($approvedOrganizationClubs as $organizationClub) {
+                                        $isChecked = is_array($event->organizationClubIDs) && in_array($organizationClub['organizationClubID'], $event->organizationClubIDs) ? 'checked' : '';
+                                        echo '<div class="checkbox-container d-flex align-items-center my-1">
+                                                <input type="checkbox" class="form-check-input" name="organizationClubIDs[]" id="orgClub' . $organizationClub['organizationClubID'] . '" value="' . $organizationClub['organizationClubID'] . '" ' . $isChecked . '>
+                                                <label class="form-check-label" for="orgClub' . $organizationClub['organizationClubID'] . '">' . $organizationClub['ocName'] . '</label>
+                                            </div>';
+                                    }
                                 }
                                 ?>
                             </div>
                         </div>
 
+
+                        </div>
+
+                        <!-- <div class="row d-flex justify-content-center my-1">
+                            <div class="input-group flex-column mb-3">
+                                <label for="eventStatus" class="label mb-2">Status</label>
+                                <div class="d-flex">
+                                    <div class="form-check">
+                                        <input type="radio" class="form-check-input" id="statusUpcoming" name="eventStatus" value="Upcoming" <?php if(isset($event) && $event->eventStatus == 'Upcoming') { echo 'checked'; } ?>>
+                                        <label class="form-check-label" for="statusUpcoming">Upcoming</label>
+                                    </div>
+                                    <div class="form-check ms-3">
+                                        <input type="radio" class="form-check-input" id="statusOngoing" name="eventStatus" value="Ongoing" <?php if(isset($event) && $event->eventStatus == 'Ongoing') { echo 'checked'; } ?>>
+                                        <label class="form-check-label" for="statusOngoing">Ongoing</label>
+                                    </div>
+                                    <div class="form-check ms-3">
+                                        <input type="radio" class="form-check-input" id="statusCompleted" name="eventStatus" value="Completed" <?php if(isset($event) && $event->eventStatus == 'Completed') { echo 'checked'; } ?>>
+                                        <label class="form-check-label" for="statusCompleted">Completed</label>
+                                    </div>
+                                </div>
+                                <?php
+                                if ((!isset($_POST['eventStatus']) && isset($_POST['save'])) || (isset($_POST['eventStatus']) && !validate_field($_POST['eventStatus']))) {
+                                ?>
+                                    <p class="text-danger my-1">Select event status</p>
+                                <?php
+                                }
+                                ?>
+                            </div>
+                        </div> -->
+
                         <!-- Registration Form Modal Button -->
-                        <div class="row d-flex justify-content-center my-1">
+                        <!-- <div class="row d-flex justify-content-center my-1">
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#eventRegistrationForm">
                                 Update Registration Form?
                             </button>
-                        </div>
+                        </div> -->
                         <div class="modal-action-btn d-flex justify-content-end">
                             <button type="button" class="btn cancel-btn mb-4 me-4" onclick="window.history.back();" aria-label="Close">Cancel</button>
                             <button type="submit" name="save" class="btn add-btn-2 mb-3 me-4">Update Event</button>

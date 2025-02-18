@@ -1,0 +1,284 @@
+<?php
+require_once '../classes/events.class.php';
+require_once '../classes/librarian.class.php';
+require_once '../tools/adminfunctions.php';
+
+session_start();
+/*
+    if the user is not logged in, then redirect to the login page,
+    this is to prevent users from accessing pages that require
+    authentication such as the dashboard
+*/
+if (!isset($_SESSION['user']) || $_SESSION['user'] != 'admin') {
+    header('location: ./index.php');
+}
+//if the above code is false then the HTML below will be displayed
+
+// Function to check if there is a conflicting event
+function hasConflictingEvent($startDateTime, $endDateTime, $existingEvents) {
+    foreach ($existingEvents as $event) {
+        $eventStart = strtotime($event['eventStartDate'] . ' ' . $event['eventStartTime']);
+        $eventEnd = strtotime($event['eventEndDate'] . ' ' . $event['eventEndTime']);
+        $start = strtotime($startDateTime);
+        $end = strtotime($endDateTime);
+
+        // Check if the start date and time fall within the range of an existing event
+        // or if the end date and time fall within the range of an existing event
+        // or if the existing event's dates and times fall within the range of the input dates and times
+        if (($start >= $eventStart && $start < $eventEnd) || ($end > $eventStart && $end <= $eventEnd) ||
+            ($eventStart >= $start && $eventStart < $end) || ($eventEnd > $start && $eventEnd <= $end)) {
+            return true; // Conflicting event found
+        }
+    }
+    return false; // No conflicting event found
+}
+
+if (isset($_POST['save'])) {
+    // Create an instance of the Events class
+    $event = new Events();
+
+    // Set the event details
+    $event->eventTitle = htmlentities($_POST['eventTitle']);
+    $event->eventDescription = htmlentities($_POST['eventDescription']);
+    $event->eventStartDate = htmlentities($_POST['eventStartDate']);
+    $event->eventEndDate = htmlentities($_POST['eventEndDate']);
+    $event->eventStartTime = htmlentities($_POST['eventStartTime']);
+    $event->eventEndTime = htmlentities($_POST['eventEndTime']);
+    $event->eventGuestLimit = htmlentities($_POST['eventGuestLimit']);
+    $event->eventRegion = htmlentities($_POST['eventRegion']);
+    $event->eventProvince = htmlentities($_POST['eventProvince']);
+    $event->eventCity = htmlentities($_POST['eventCity']);
+    $event->eventBarangay = htmlentities($_POST['eventBarangay']);
+    $event->eventStreetName = htmlentities($_POST['eventStreetName']);
+    $event->eventBuildingName = htmlentities($_POST['eventBuildingName']);
+    $event->eventZipCode = htmlentities($_POST['eventZipCode']);
+    // $event->eventStatus = htmlentities($_POST['eventStatus']);
+
+    // Retrieve selected librarian IDs from the form
+    $selectedLibrarianIDs = isset($_POST['librarianIDs']) ? $_POST['librarianIDs'] : [];
+    $event->librarianIDs = $selectedLibrarianIDs;
+
+    // Retrieve selected organization/club IDs from the form
+    $selectedOrganizationClubIDs = isset($_POST['organizationClubIDs']) ? $_POST['organizationClubIDs'] : [];
+    $event->organizationClubIDs = $selectedOrganizationClubIDs;
+
+    if (validate_field($event->eventTitle) &&
+        validate_field($event->eventDescription) &&
+        validate_field($event->eventStartDate) &&
+        validate_field($event->eventEndDate) &&
+        validate_field($event->eventStartTime) &&
+        validate_field($event->eventEndTime) &&
+        validate_field($event->eventGuestLimit) &&
+        validate_field($event->eventRegion) &&
+        validate_field($event->eventProvince) &&
+        validate_field($event->eventCity) &&
+        validate_field($event->eventBarangay) &&
+        validate_field($event->eventStreetName) &&
+        validate_field($event->eventZipCode)) {
+
+        // Get all existing events
+        $existingEvents = $event->getAllEvents();
+
+        // Check for conflicting events
+        if (hasConflictingEvent($event->eventStartDate . ' ' . $event->eventStartTime, $event->eventEndDate . ' ' . $event->eventEndTime, $existingEvents)) {
+            echo '<div class="alert alert-danger" role="alert">This event conflicts with an existing event. Please choose a different date or time.</div>';
+        } else {
+            // Proceed with adding the event
+            if ($event->add()) {
+                echo 'Event added successfully.';
+                // Redirect to events page
+                header('location: ../webpages/events.php');
+                exit(); // Exit to prevent further output
+            } else {
+                echo 'An error occurred while adding event in the database.';
+            }
+        }
+    }
+}
+
+$librarian = new Librarian();
+$librarians = $librarian->getAvailablelibrarian();
+
+$event = new Events();
+$organizationsClubs = $event->getApprovedOrganizationClubs();
+?>
+<!DOCTYPE html>
+<html lang="en">
+
+<?php
+  $title = 'Events & Announcements';
+  $events = 'active-1';
+  require_once('../include/head.php');
+?>
+
+<body>
+
+
+    <div class="main">
+        <div class="row">
+            <?php
+                require_once('../include/nav-panel.php');
+            ?>
+
+            <div class="col-12 col-md-8 col-lg-9">
+                
+                <!-- Add Event Modal -->
+                <div class="container mt-4">
+                    <div class="d-flex justify-content-between">
+                        <h5 class="mt-4 ms-2" id="addEventLabel">Add Event</h5>
+                        
+                    </div>
+                    <div class="modal-body mt-2">
+                    <form method="post" action="" id="addClubForm" onsubmit="return validateForm()">
+                        <div class="row d-flex justify-content-center my-1">
+                            <div class="input-group flex-column mb-3">
+                                <label for="eventTitle" class="label">Event Title</label>
+                                <input type="text" name="eventTitle" id="eventTitle" class="input-1" placeholder="Title of the Event" required value="<?php if(isset($_POST['eventTitle'])) { echo $_POST['eventTitle']; } ?>">
+                                <?php
+                                if(isset($_POST['eventTitle']) && !validate_field($_POST['eventTitle'])){
+                                    ?>
+                                    <p class="text-danger my-1">Event title is required</p>
+                                    <?php
+                                }
+                                ?>
+                            </div>
+                        </div>
+
+                        <div class="row d-flex justify-content-center my-1">
+                            <div class="input-group flex-column mb-3">
+                                <label for="eventDescription" class="label">Description</label>
+                                <input type="text" id="eventDescription" name="eventDescription" class="input-1" rows="4" cols="50" placeholder="Write brief description" required value="<?php if(isset($_POST['eventDescription'])) { echo $_POST['eventDescription']; } ?>">
+                                <?php
+                                if(isset($_POST['eventDescription']) && !validate_field($_POST['eventDescription'])){
+                                    ?>
+                                    <p class="text-danger my-1">Event description is required</p>
+                                    <?php
+                                }
+                                ?>
+                            </div>
+                        </div>
+
+                        <div class="row d-flex justify-content-center my-1">
+                            <div class="input-group flex-column mb-3">
+                                <label for="librarianID" class="label">Select Event Facilitators/s</label>
+                                <br>
+                                <?php
+                                foreach ($librarians as $librarian) {
+                                    echo '<div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="librarianIDs[]" id="librarian' . $librarian['librarianID'] . '" value="' . $librarian['librarianID'] . '>
+                                            <label class="form-check-label" for="librarian' . $librarian['librarianID'] . '">' . $librarian['librarianFirstName'] . ' ' . $librarian['librarianLastName'] . '</label>
+                                        </div>';
+                                }
+                                ?>
+                            </div>
+                        </div>
+
+                        <div class="row d-flex justify-content-center my-1">
+                            <div class="input-group flex-column mb-3">
+                                <label for="eventDate" class="label">Date of the Event</label>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <label for="eventStartDate" class="label-2">Start Date</label>
+                                        <input type="date" name="eventStartDate" id="eventStartDate" class="input-1 col-lg-12" placeholder="From" required value="<?php if(isset($_POST['eventStartDate'])) { echo $_POST['eventStartDate']; } ?>">
+                                        <?php
+                                        if(isset($_POST['eventStartDate']) && !validate_field($_POST['eventStartDate'])){
+                                            ?>
+                                            <p class="text-danger my-1">Event start date is required</p>
+                                            <?php
+                                        }
+                                        ?>
+                                    </div>
+
+                                    <div class="col-6">
+                                        <label for="eventEndDate" class="label-2">End Date</label>
+                                        <input type="date" name="eventEndDate" id="eventEndDate" class="input-1 col-lg-12" placeholder="To" required value="<?php if(isset($_POST['eventEndDate'])) { echo $_POST['eventEndDate']; } ?>">
+                                        <?php
+                                        if(isset($_POST['eventEndDate']) && !validate_field($_POST['eventEndDate'])){
+                                            ?>
+                                            <p class="text-danger my-1">Event end date is required</p>
+                                            <?php
+                                        }
+                                        ?>
+                                    </div>
+                                </div>
+                                <div></div>
+                            </div>
+                        </div>
+
+                        <div class="row d-flex justify-content-center my-1">
+                            <div class="input-group flex-column mb-3">
+                                <label for="eventTime" class="label">Time of the Event</label>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <label for="eventStartTime" class="label-2">Start Time</label>
+                                        <input type="time" name="eventStartTime" id="eventStartTime" class="input-1 col-lg-12" placeholder="From" required value="<?php if(isset($_POST['eventStartTime'])) { echo $_POST['eventStartTime']; } ?>">
+                                        <?php
+                                        if(isset($_POST['eventStartTime']) && !validate_field($_POST['eventStartTime'])){
+                                            ?>
+                                            <p class="text-danger my-1">Event start time is required</p>
+                                            <?php
+                                        }
+                                        ?>
+                                    </div>
+
+                                    <div class="col-6">
+                                        <label for="eventEndTime" class="label-2">End Time</label>
+                                        <input type="time" name="eventEndTime" id="eventEndTime" class="input-1 col-lg-12" placeholder="To" required value="<?php if(isset($_POST['eventEndTime'])) { echo $_POST['eventEndTime']; } ?>">
+                                        <?php
+                                        if(isset($_POST['eventEndTime']) && !validate_field($_POST['eventEndTime'])){
+                                            ?>
+                                            <p class="text-danger my-1">Event end time is required</p>
+                                            <?php
+                                        }
+                                        ?>
+                                    </div>
+                                </div>
+                                <div></div>
+                            </div>
+                        </div>
+
+                        <!-- other fields -->
+
+                        <div class="row d-flex justify-content-center my-1">
+                            <div class="input-group flex-column mb-3">
+                                <label for="organizationClubID" class="label">Collaboration with</label>
+
+                                <?php
+                                $approvedOrganizationClubs = $event->getApprovedOrganizationClubs(); // Assuming you have a method to fetch approved organization clubs
+                                if (empty($approvedOrganizationClubs)) {
+                                    echo '<p>No affiliated organizations or clubs.</p>';
+                                } else {
+                                    foreach ($approvedOrganizationClubs as $organizationClub) {
+                                        echo '<div class="checkbox-container d-flex align-items-center my-1">
+                                                <input type="checkbox" class="form-check-input" name="organizationClubIDs[]" id="orgClub' . $organizationClub['organizationClubID'] . '" value="' . $organizationClub['organizationClubID'] . '">
+                                                <label class="form-check-label" for="orgClub' . $organizationClub['organizationClubID'] . '">' . $organizationClub['ocName'] . '</label>
+                                            </div>';
+                                    }
+                                }
+                                ?>
+                            </div>
+                        </div>
+                        <div class="modal-action-btn d-flex justify-content-end">
+                            <button type="button" class="btn cancel-btn mb-4 me-4" onclick="window.history.back();" aria-label="Close">Cancel</button>
+                            <button type="submit" name="save" class="btn add-btn-2 mb-3 me-4">Add Event</button>
+                        </div>
+                    </form>
+                    </div>
+                    </div>
+                </div>
+                    <script>
+                        function validateForm() {
+                            var selectedLibrarians = document.querySelectorAll('input[name="librarianIDs[]"]:checked');
+                            if (selectedLibrarians.length === 0) {
+                                alert('Please select at least one event facilitator.');
+                                return false; // Prevent form submission
+                            }
+                            return true; // Allow form submission
+                        }
+                    </script>
+                </div>
+
+    <?php require_once('../include/js.php'); ?>
+
+</body>
+</html>

@@ -89,9 +89,9 @@ $librarians = $librarian->getAvailablelibrarian();
                                 <?php
                                     $new_club = new Clubs();
                                     if(isset($_POST['clubName'])){
-                                            $new_club->club_name = htmlentities($_POST['clubName']);
+                                            $new_club->clubName = htmlentities($_POST['clubName']);
                                     }else{
-                                            $new_club->club_name = '';
+                                            $new_club->clubName = '';
                                     }
 
                                     if(isset($_POST['clubName']) && strcmp(validate_clubname($_POST['clubName']), 'success') != 0){
@@ -127,7 +127,10 @@ $librarians = $librarian->getAvailablelibrarian();
                                 <br>
                                 <?php
                                 foreach ($librarians as $librarian) {
-                                    echo '<input type="checkbox" name="librarianIDs[]" value="' . $librarian['librarianID'] . '"> ' . $librarian['librarianFirstName'] . ' ' . $librarian['librarianLastName'] . ' <br>';
+                                    echo '<div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="librarianIDs[]" id="librarian' . $librarian['librarianID'] . '" value="' . $librarian['librarianID'] . '>
+                                            <label class="form-check-label" for="librarian' . $librarian['librarianID'] . '">' . $librarian['librarianFirstName'] . ' ' . $librarian['librarianLastName'] . '</label>
+                                        </div>';
                                 }
                                 ?>
                             </div>

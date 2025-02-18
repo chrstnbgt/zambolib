@@ -36,11 +36,7 @@
                                     <i class='bx bx-trash action-icon me-2 text-danger' aria-hidden="true"></i> Delete
                                 </div>
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="downloadRowData()">
-                                <div class="d-flex align-items-center text-success">
-                                    <i class='bx bxs-download action-icon me-2 text-success' aria-hidden="true"></i> Download
-                                </div>
-                            </a></li>
+
                         </ul>
                     </td>
                 </tr>

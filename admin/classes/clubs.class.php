@@ -82,6 +82,7 @@ class Clubs {
         }
     }
     
+    
     function is_name_exist(){
         $sql = "SELECT * FROM club WHERE clubName = :clubName;";
         $query = $this->db->connect()->prepare($sql);
@@ -99,9 +100,10 @@ class Clubs {
         $stmt = $this->db->connect()->prepare("SELECT * FROM club WHERE clubID = :clubID");
         $stmt->bindParam(':clubID', $clubID, PDO::PARAM_INT);
         $stmt->execute();
-
+    
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    
 
     function delete($clubID)
     {
@@ -155,6 +157,36 @@ class Clubs {
         return $data ?: []; // Return an empty array if $data is falsy
     }
     
+    function getMemberCount($clubID){
+        $sql = "SELECT COUNT(*) AS member_count FROM club_membership WHERE clubID = :clubID AND cmstatus = 'Approved'";
+        $query = $this->db->connect()->prepare($sql);
+        $query->bindParam(':clubID', $clubID);
+        $memberCount = 0;
+        if ($query->execute()) {
+            $result = $query->fetch(PDO::FETCH_ASSOC);
+            $memberCount = $result['member_count'];
+        }
+        return $memberCount;
+    }   
+    function getClubMembers($clubID){
+        $sql = "SELECT CONCAT(u.userFirstName, ' ', u.userMiddleName, ' ', u.userLastName) AS fullName,
+                    u.userEmail,
+                    u.userContactNo,
+                    u.userGender,
+                    CONCAT(u.userStreetName, ', ', u.userBarangay, ', ', u.userCity, ', ', u.userProvince, ', ', u.userZipCode) AS address,
+                    cm.cmCreatedAt AS dateJoined
+                FROM club_membership cm
+                JOIN user u ON cm.userID = u.userID
+                WHERE cm.clubID = :clubID AND cm.cmstatus = 'Approved'"; // Corrected cm.cmstatus
+        $query = $this->db->connect()->prepare($sql);
+        $query->bindParam(':clubID', $clubID);
+        $data = null;
+        
+        if ($query->execute()) {
+            $data = $query->fetchAll(PDO::FETCH_ASSOC);
+        }
+        return $data;
+    }
 
 
     function getAllClubs() {

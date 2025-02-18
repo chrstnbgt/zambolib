@@ -32,8 +32,8 @@ if (isset($_POST['save'])) {
     $announcement->eaTitle = htmlentities($_POST['eaTitle']);
     $announcement->eaDescription = htmlentities($_POST['eaDescription']);
     $announcement->eaStartDate = htmlentities($_POST['eaStartDate']);
-    $announcement->eaEndDate = htmlentities($_POST['eaStartTime']);
-    $announcement->eaStartTime = htmlentities($_POST['eaStartDate']);
+    $announcement->eaEndDate = htmlentities($_POST['eaEndDate']);
+    $announcement->eaStartTime = htmlentities($_POST['eaStartTime']);
     $announcement->eaEndTime = htmlentities($_POST['eaEndTime']);
 
     // Validate inputs
@@ -77,7 +77,7 @@ if (isset($_POST['save'])) {
                         
                     </div>
                     <div class="modal-body mt-2">
-                    <form action="">
+                    <form action="" method="POST">
                         <div class="row d-flex justify-content-center my-1">
                             <div class="input-group flex-column mb-3">
                                 <label for="eaTitle" class="label">Announcement Title</label>

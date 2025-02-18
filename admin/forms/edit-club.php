@@ -1,64 +1,51 @@
 <?php
+
 require_once '../classes/clubs.class.php';
 require_once '../classes/librarian.class.php';
 require_once '../tools/adminfunctions.php';
 
+// Resume session here to fetch session values
 session_start();
-/*
-    if the user is not logged in, then redirect to the login page,
-    this is to prevent users from accessing pages that require
-    authentication such as the dashboard
-*/
+
+// Redirect to the login page if the user is not logged in
 if (!isset($_SESSION['user']) || $_SESSION['user'] != 'admin') {
     header('location: ./index.php');
 }
-//if the above code is false then the HTML below will be displayed
+
+// Initialize Clubs and Librarian objects
+$clubs = new Clubs();
+$librarian = new Librarian();
+$librarians = $librarian->getAvailableLibrarian();
 
 // Check if the form is submitted for club editing
 if (isset($_POST['save'])) {
-    $clubs = new Clubs();
     $clubs->clubName = htmlentities($_POST['clubName']);
     $clubs->clubDescription = htmlentities($_POST['clubDescription']);
     $clubs->clubMinAge = htmlentities($_POST['clubMinAge']);
     $clubs->clubMaxAge = htmlentities($_POST['clubMaxAge']);
 
-    // Check if clubMinAge is smaller than clubMaxAge
-    if ($clubs->clubMinAge >= $clubs->clubMaxAge) {
-        $errorMsg = 'Minimum age must be smaller than maximum age.';
-    } else {
-        // Retrieve selected librarian IDs from the form
-        $selectedLibrarianIDs = isset($_POST['librarianIDs']) ? $_POST['librarianIDs'] : [];
-        $clubs->librarianIDs = $selectedLibrarianIDs;
+    // Retrieve selected librarian IDs from the form
+    $selectedLibrarianIDs = isset($_POST['librarianIDs']) ? $_POST['librarianIDs'] : [];
+    $clubs->librarianIDs = $selectedLibrarianIDs;
 
-        // Validate club fields
-        if (validate_field($clubs->clubName) &&
-            validate_field($clubs->clubDescription) &&
-            validate_field($clubs->clubMinAge) &&
-            validate_field($clubs->clubMaxAge) &&
-            validate_clubname($clubs->clubName)) {
+    // Validate club fields
+    if (validate_field($clubs->clubName) &&
+        validate_field($clubs->clubDescription) &&
+        validate_field($clubs->clubMinAge) &&
+        validate_field($clubs->clubMaxAge)) {
 
-            // Check if club name already exists
-            if (!$clubs->is_name_exist()) {
-                // Get the club ID from the URL
-                $clubID = $_GET['id'];
+        // Get the club ID from the URL
+        $clubID = $_GET['id'];
 
-                // Edit the club in the database
-                if ($clubs->edit($clubID, $clubs->clubName, $clubs->clubDescription, $clubs->librarianIDs, $clubs->clubMinAge, $clubs->clubMaxAge)) {
-                    header('location: ../webpages/clubs.php');
-                    exit; // Stop further execution
-                } else {
-                    $errorMsg = 'An error occurred while updating the club in the database.';
-                }
-            } else {
-                $errorMsg = 'Club name already exists';
-            }
+        // Edit the club in the database
+        if ($clubs->edit($clubID, $clubs->clubName, $clubs->clubDescription, $clubs->librarianIDs, $clubs->clubMinAge, $clubs->clubMaxAge)) {
+            header('location: ../webpages/clubs.php');
+            exit;
+        } else {
+            echo 'An error occurred while updating the club in the database.';
         }
     }
 }
-
-$clubs = new Clubs();
-$librarian = new Librarian();
-$librarians = $librarian->getAvailableLibrarian();
 
 // Get the club details for editing
 if (isset($_GET['id'])) {
@@ -88,6 +75,37 @@ if (isset($_GET['id'])) {
         'librarianIDs' => []
     ];
 }
+
+// Get the club details for editing
+if (isset($_GET['id'])) {
+    $record = $clubs->fetch($_GET['id']);
+    if ($record) {
+        $club = [
+            'clubID' => $record['clubID'],
+            'clubName' => $record['clubName'],
+            'clubDescription' => $record['clubDescription'],
+            'clubMinAge' => $record['clubMinAge'],
+            'clubMaxAge' => $record['clubMaxAge'],
+            'librarianIDs' => isset($record['librarianIDs']) ? explode(',', $record['librarianIDs']) : [] // Set default value to an empty array
+        ];
+    } else {
+        // Handle the case when the club ID is not found in the database
+        echo "Club not found";
+        exit;
+    }
+} else {
+    // Set default values for $club when it's not set
+    $club = [
+        'clubID' => isset($_GET['id']) ? $_GET['id'] : '',
+        'clubName' => '',
+        'clubDescription' => '',
+        'clubMinAge' => '',
+        'clubMaxAge' => '',
+        'librarianIDs' => [] // Set default value to an empty array
+    ];
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

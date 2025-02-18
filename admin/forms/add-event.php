@@ -14,8 +14,33 @@ if (!isset($_SESSION['user']) || $_SESSION['user'] != 'admin') {
 }
 //if the above code is false then the HTML below will be displayed
 
+// Function to check if there is a conflicting event
+function hasConflictingEvent($startDateTime, $endDateTime, $eventStreetName, $eventBuildingName, $existingEvents) {
+    foreach ($existingEvents as $event) {
+        $eventStart = strtotime($event['eventStartDate'] . ' ' . $event['eventStartTime']);
+        $eventEnd = strtotime($event['eventEndDate'] . ' ' . $event['eventEndTime']);
+        $start = strtotime($startDateTime);
+        $end = strtotime($endDateTime);
+
+        // Check if the start date and time fall within the range of an existing event
+        // or if the end date and time fall within the range of an existing event
+        // or if the existing event's dates and times fall within the range of the input dates and times
+        if (($start >= $eventStart && $start < $eventEnd) || ($end > $eventStart && $end <= $eventEnd) ||
+            ($eventStart >= $start && $eventStart < $end) || ($eventEnd > $start && $eventEnd <= $end)) {
+            // Check if the street name and building name are the same
+            if ($event['eventStreetName'] === $eventStreetName && $event['eventBuildingName'] === $eventBuildingName) {
+                return true; // Conflicting event found
+            }
+        }
+    }
+    return false; // No conflicting event found
+}
+
 if (isset($_POST['save'])) {
+    // Create an instance of the Events class
     $event = new Events();
+
+    // Set the event details
     $event->eventTitle = htmlentities($_POST['eventTitle']);
     $event->eventDescription = htmlentities($_POST['eventDescription']);
     $event->eventStartDate = htmlentities($_POST['eventStartDate']);
@@ -30,52 +55,79 @@ if (isset($_POST['save'])) {
     $event->eventStreetName = htmlentities($_POST['eventStreetName']);
     $event->eventBuildingName = htmlentities($_POST['eventBuildingName']);
     $event->eventZipCode = htmlentities($_POST['eventZipCode']);
-    $event->eventStatus = htmlentities($_POST['eventStatus']);
+    // $event->eventStatus = htmlentities($_POST['eventStatus']);
 
     // Retrieve selected librarian IDs from the form
     $selectedLibrarianIDs = isset($_POST['librarianIDs']) ? $_POST['librarianIDs'] : [];
     $event->librarianIDs = $selectedLibrarianIDs;
 
-    if (validate_field($event->eventTitle) &&
-        validate_field($event->eventDescription) &&
-        validate_field($event->eventStartDate) &&
-        validate_field($event->eventEndDate) &&
-        validate_field($event->eventStartTime) &&
-        validate_field($event->eventEndTime) &&
-        validate_field($event->eventGuestLimit) &&
-        validate_field($event->eventRegion) &&
-        validate_field($event->eventProvince) &&
-        validate_field($event->eventCity) &&
-        validate_field($event->eventBarangay) &&
-        validate_field($event->eventStreetName) &&
-        validate_field($event->eventZipCode) &&
-        validate_field($event->eventStatus)) {
+    // Retrieve selected organization/club IDs from the form
+    $selectedOrganizationClubIDs = isset($_POST['organizationClubIDs']) ? $_POST['organizationClubIDs'] : [];
+    $event->organizationClubIDs = $selectedOrganizationClubIDs;
 
-        // Check for conflicting events
-        if ($event->checkEventConflict()) {
-            echo '<div class="alert alert-danger" role="alert">This event conflicts with an existing event. Please choose a different date or time.</div>';
-            echo "Start Date: " . $event->eventStartDate . "<br>";
-            echo "End Date: " . $event->eventEndDate . "<br>";
-            echo "Start Time: " . $event->eventStartTime . "<br>";
-            echo "End Time: " . $event->eventEndTime . "<br>";
+        if (validate_field($event->eventTitle) &&
+            validate_field($event->eventDescription) &&
+            validate_field($event->eventStartDate) &&
+            validate_field($event->eventEndDate) &&
+            validate_field($event->eventStartTime) &&
+            validate_field($event->eventEndTime) &&
+            validate_field($event->eventGuestLimit) &&
+            validate_field($event->eventRegion) &&
+            validate_field($event->eventProvince) &&
+            validate_field($event->eventCity) &&
+            validate_field($event->eventBarangay) &&
+            validate_field($event->eventStreetName) &&
+            validate_field($event->eventZipCode)) {
 
-        } else {
-            // Proceed with adding the event
-            if ($event->add()) {
-                echo 'Event added successfully.';
-                // Redirect to events page
-                header('location: ../webpages/events.php');
-                exit(); // Exit to prevent further output
+            // Get all existing events
+            $existingEvents = $event->getAllEvents();
+
+            if (strtotime($event->eventStartDate) > strtotime($event->eventEndDate)) {
+                echo '<div class="alert alert-danger" role="alert">The event start date cannot be greater than the end date. Please check the dates.</div>';
+            } elseif (strtotime($event->eventStartDate) == strtotime($event->eventEndDate)) {
+                // Check if the start time is greater than the end time on the same day
+                if (strtotime($event->eventStartTime) >= strtotime($event->eventEndTime)) {
+                    echo '<div class="alert alert-danger" role="alert">The event start time cannot be greater than or equal to the end time. Please check the times.</div>';
+                } else {
+                    // Proceed with checking for conflicting events
+                    if (hasConflictingEvent($startDateTime, $endDateTime, $event->eventStreetName, $event->eventBuildingName, $existingEvents)) {
+                        echo '<div class="alert alert-danger" role="alert">This event conflicts with an existing event. Please choose a different date or time.</div>';
+                    } else {
+                        // Proceed with adding the event
+                        if ($event->add()) {
+                            echo 'Event added successfully.';
+                            // Redirect to events page
+                            header('location: ../webpages/events.php');
+                            exit(); // Exit to prevent further output
+                        } else {
+                            echo 'An error occurred while adding event in the database.';
+                        }
+                    }
+                }
             } else {
-                echo 'An error occurred while adding event in the database.';
+                // Proceed with checking for conflicting events
+                if (hasConflictingEvent($startDateTime, $endDateTime, $event->eventStreetName, $event->eventBuildingName, $existingEvents)) {
+                    echo '<div class="alert alert-danger" role="alert">This event conflicts with an existing event. Please choose a different date or time.</div>';
+                } else {
+                    // Proceed with adding the event
+                    if ($event->add()) {
+                        echo 'Event added successfully.';
+                        // Redirect to events page
+                        header('location: ../webpages/events.php');
+                        exit(); // Exit to prevent further output
+                    } else {
+                        echo 'An error occurred while adding event in the database.';
+                    }
+                }
             }
         }
-    }
 }
-
 
 $librarian = new Librarian();
 $librarians = $librarian->getAvailablelibrarian();
+
+$event = new Events();
+$organizationsClubs = $event->getApprovedOrganizationClubs();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -139,7 +191,10 @@ $librarians = $librarian->getAvailablelibrarian();
                                 <br>
                                 <?php
                                 foreach ($librarians as $librarian) {
-                                    echo '<input type="checkbox" name="librarianIDs[]" value="' . $librarian['librarianID'] . '"> ' . $librarian['librarianFirstName'] . ' ' . $librarian['librarianLastName'] . ' <br>';
+                                    echo '<div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="librarianIDs[]" id="librarian' . $librarian['librarianID'] . '" value="' . $librarian['librarianID'] . '>
+                                            <label class="form-check-label" for="librarian' . $librarian['librarianID'] . '">' . $librarian['librarianFirstName'] . ' ' . $librarian['librarianLastName'] . '</label>
+                                        </div>';
                                 }
                                 ?>
                             </div>
@@ -224,7 +279,7 @@ $librarians = $librarian->getAvailablelibrarian();
                         </div>
 
                         <div class="row d-flex justify-content-center mt-1">
-                            <label for="eventTime" class="label">Place of Event</label>
+                            <label for="eventRegion" class="label">Place of Event</label>
                             <div class="input-group flex-column mb-3">
                                 <label for="eventRegion" class="label ps-2">Region</label>
                                 <select name="eventRegion" id="eventRegion" class="input-1">
@@ -409,27 +464,26 @@ $librarians = $librarian->getAvailablelibrarian();
                             ?>
                         </div>
 
-                        <!-- <div class="row d-flex justify-content-center my-1">
+                        <div class="row d-flex justify-content-center my-1">
                             <div class="input-group flex-column mb-3">
-                                <label for="description" class="label">Collaboration with</label>
+                                <label for="organizationClubID" class="label">Collaboration with</label>
 
-                                <div class="checkbox-container d-flex align-items-center my-1">
-                                    <label class="cyberpunk-checkbox-label">
-                                    <input type="checkbox" class="cyberpunk-checkbox librarian-name-checkbox ms-2">None</label>
-                                </div>
-
-                                <div class="checkbox-container d-flex align-items-center my-1">
-                                    <label class="cyberpunk-checkbox-label">
-                                    <input type="checkbox" class="cyberpunk-checkbox librarian-name-checkbox ms-2">Department of Information, Communications, and Technology</label>
-                                </div>
-
-                                <div class="checkbox-container d-flex align-items-center my-1">
-                                    <label class="cyberpunk-checkbox-label">
-                                    <input type="checkbox" class="cyberpunk-checkbox librarian-name-checkbox ms-2">Bookworm Club</label>
-                                </div>
+                                <?php
+                                $approvedOrganizationClubs = $event->getApprovedOrganizationClubs(); // Assuming you have a method to fetch approved organization clubs
+                                if (empty($approvedOrganizationClubs)) {
+                                    echo '<p>No affiliated organizations or clubs.</p>';
+                                } else {
+                                    foreach ($approvedOrganizationClubs as $organizationClub) {
+                                        echo '<div class="checkbox-container d-flex align-items-center my-1">
+                                                <input type="checkbox" class="form-check-input" name="organizationClubIDs[]" id="orgClub' . $organizationClub['organizationClubID'] . '" value="' . $organizationClub['organizationClubID'] . '">
+                                                <label class="form-check-label" for="orgClub' . $organizationClub['organizationClubID'] . '">' . $organizationClub['ocName'] . '</label>
+                                            </div>';
+                                    }
+                                }
+                                ?>
                             </div>
-                        </div> -->
-
+                        </div>
+<!-- 
                         <div class="row d-flex justify-content-center my-1">
                             <div class="input-group flex-column mb-3">
                             <label for="eventStatus" class="label mb-2">Status</label>
@@ -455,14 +509,14 @@ $librarians = $librarian->getAvailablelibrarian();
                                 }
                             ?>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Registration Form Modal Button -->
-                        <div class="row d-flex justify-content-center my-1">
+                        <!-- <div class="row d-flex justify-content-center my-1">
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#eventRegistrationForm">
                                 Create Registration Form?
                             </button>
-                        </div>
+                        </div> -->
                         <div class="modal-action-btn d-flex justify-content-end">
                             <button type="button" class="btn cancel-btn mb-4 me-4" onclick="window.history.back();" aria-label="Close">Cancel</button>
                             <button type="submit" name="save" class="btn add-btn-2 mb-3 me-4">Add Event</button>
@@ -527,3 +581,4 @@ $librarians = $librarian->getAvailablelibrarian();
     <?php require_once('../include/js.php'); ?>
 
 </body>
+</html>
